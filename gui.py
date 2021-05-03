@@ -7,6 +7,8 @@ from webbrowser import open_new
 
 from os.path import basename, dirname, realpath
 from datetime import datetime
+import pyttsx3
+from PIL import Image, ImageTk
 
 
 class File:
@@ -44,6 +46,8 @@ class Main(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
 
+        self.IS_SAVED = 0
+
         self.wm_geometry("800x600")
         self.curr_file = None
 
@@ -56,13 +60,39 @@ class Main(tk.Tk):
         self.status_bar = StatusBar(self)
         self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
 
-        self.menu.new_file()
+        self.curr_file = File(join(dirname(realpath(__file__)) +
+                                    "\\New File.txt"))
+        self.add_scrolledtext()
+        self.setup()
+
+        self.engine = pyttsx3.init()
+
+        self.engine.setProperty('rate', 110)
+        self.engine.setProperty('volume', 1.0)
+        self.voices = self.engine.getProperty('voices')
+        self.engine.setProperty('voice', self.voices[1].id)
 
         self.text.bind("<F5>", self.menu.insert_datetime)
-
         self.text.bind("<Enter>", self.menu.set_button_state)
         self.text.bind("<Leave>", self.menu.set_button_state)
         self.text.bind("<<Modified>>", self.menu.set_button_state)
+        self.text.bind("<<Modified>>", self.isUnsaved)
+
+        self.bind('<Control-n>', self.menu.ctrlN)
+        self.bind('<Control-o>', self.menu.ctrlO)
+        self.bind('<Control-s>', self.menu.ctrlS)
+        self.bind('<Control-S>', self.menu.ctrlShiftS)
+        self.bind('<Control-q>', self.menu.ctrlQ)
+
+        self.speaker = tk.PhotoImage(file = "speaker.png")
+        self.speaker_btn = tk.Button(self.text, image = self.speaker, height = 40, width = 40, command = self.speak_selected)
+        self.speaker_btn.update()
+        self.speaker_btn.place(x = self.winfo_width() - 60, y = 10)
+        self.speaker_btn["bg"] = "white"
+        self.speaker_btn["border"] = "0"
+        self.speaker_btn.lift()
+        self.speaker_btn.update()
+        self.bind("<Configure>", self.resizeEvent)
 
     def setup(self):
         """
@@ -83,6 +113,33 @@ class Main(tk.Tk):
 
         self.text.pack(expand=True, fill="both")
 
+    def speak(self, audio):
+        self.engine.say(audio)
+        self.engine.runAndWait()
+
+    def speak_selected(self):
+        self.audio = self.text.get(tk.SEL_FIRST, tk.SEL_LAST)
+        self.speak(self.audio)
+
+    def askToSave(self):
+        if not self.IS_SAVED:
+            msgbox = messagebox.askyesnocancel(title = "Save Changes", message = "Do you want to save the changes ?") 
+            if msgbox:
+                self.menu.save_file()
+                self.destroy()
+            elif msgbox is None:
+                pass
+            else:
+                self.destroy()
+        else:
+            self.destroy()
+
+    def isUnsaved(self, e):
+        self.IS_SAVED = 0
+
+    def resizeEvent(self, e):
+        self.update()
+        self.speaker_btn.place(x = self.winfo_width() - 60, y = 10)
 
 class MenuBar(tk.Menu):
 
@@ -106,10 +163,12 @@ class MenuBar(tk.Menu):
                                    command=self.save_file,
                                    accelerator="Ctrl+S", state="disabled")
         self.file_menu.add_command(label="Save As...",
-                                   command=self.saveas_file)
+                                   command=self.saveas_file,
+                                   accelerator="Ctrl+Shift+S")
         self.file_menu.add_separator()
         self.file_menu.add_cascade(label="Quit",
-                                   command=master.destroy)
+                                   command=master.destroy,
+                                   accelerator="Ctrl+Q")
         self.add_cascade(label="File", menu=self.file_menu,
                          font="Times 23 bold")
 
@@ -198,10 +257,21 @@ class MenuBar(tk.Menu):
         Creates a new file object.  Then clears container frame and creates a
         new one by calling 'add_scrolledtext'.
         """
+
+        if not self.master.IS_SAVED:
+            msgbox = messagebox.askyesnocancel(title = "Save Changes", message = "Do you want to save the changes ?") 
+            if msgbox:
+                self.save_file()
+            elif msgbox is None:
+                pass
         self.master.curr_file = File(join(dirname(realpath(__file__)) +
-                                     "\\New File.txt"))
+                                    "\\New File.txt"))
         self.master.add_scrolledtext()
         self.master.setup()
+        self.master.IS_SAVED = 0
+
+    def ctrlN(self, e):
+        self.new_file()
 
     def open_file(self):
         """
@@ -210,6 +280,12 @@ class MenuBar(tk.Menu):
         the newly created scrolledtext box.  Then creates a new File
         object and sets the curr_file to that object.
         """
+        if not self.master.IS_SAVED:
+            msgbox = messagebox.askyesnocancel(title = "Save Changes", message = "Do you want to save the changes ?") 
+            if msgbox:
+                self.save_file()
+            elif msgbox is None:
+                pass
         file_to_open = filedialog.askopenfilename(defaultextension="txt",
                                                   initialdir=self.master.curr_file.file_path,
                                                   filetypes=(("Text files", "*.txt"),
@@ -223,6 +299,10 @@ class MenuBar(tk.Menu):
             self.master.text.insert("1.0", data)
             self.master.text.edit_modified(False)
             self.master.setup()
+            self.master.IS_SAVED = 1
+
+    def ctrlO(self, e):
+        self.open_file()
 
     def save_file(self):
         """
@@ -236,6 +316,10 @@ class MenuBar(tk.Menu):
                 self.master.setup()
         else:
             self.saveas_file()
+        self.master.IS_SAVED = 1
+
+    def ctrlS(self, e):
+        self.save_file()
 
     def saveas_file(self):
         """
@@ -254,6 +338,13 @@ class MenuBar(tk.Menu):
             self.master.curr_file.saved = True
             self.master.text.edit_modified(False)
             self.master.setup()
+        self.master.IS_SAVED = 1
+
+    def ctrlShiftS(self, e):
+        self.saveas_file()
+
+    def ctrlQ(self, e):
+        self.master.askToSave()
 
     def undo(self):
         try:
@@ -277,8 +368,8 @@ class MenuBar(tk.Menu):
     def paste(self):
         self.master.text.event_generate("<<Paste>>")
 
-    def select_all(self, master):
-        master.text.tag_add("sel", "1.0", "end")
+    def select_all(self):
+        self.master.text.tag_add("sel", "1.0", "end")
 
     def insert_datetime(self, event=None):
         self.curr_date = CustomDateTime()
@@ -308,7 +399,7 @@ class MenuBar(tk.Menu):
             master.status_bar.destroy()
         else:
             master.status_bar = StatusBar(master)
-            master.status_bar.pack(side=tk.BOTTOm, fill=tk.X)
+            master.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
 
     def open_list_window(self):
         self.list_window = ListWindow()
