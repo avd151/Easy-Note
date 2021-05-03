@@ -25,8 +25,7 @@ class CustomDateTime:
 
     def __init__(self, dt_obj=datetime.now()):
         self.dt_obj = dt_obj
-        self.date = str(self.dt_obj.month) + "/" + \
-            str(self.dt_obj.day) + "/" + str(self.dt_obj.year)
+        self.date = str(self.dt_obj.day) + "/" + str(self.dt_obj.month) + "/" + str(self.dt_obj.year)
         self.time = datetime.strftime(datetime.strptime(
             str(self.dt_obj.hour)+":"+str(self.dt_obj.minute), "%H:%M"), "%I:%M %p")
 
