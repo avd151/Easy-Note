@@ -632,13 +632,13 @@ class HelpWindow(tk.Toplevel):
         self.geometry("250x200")
         self.help_frame = tk.Frame(self)
         self.help_frame.grid(column=0, row=0)
-        tk.Label(self.about_frame, text="For Help on Using Easy-Note, Visit",
+        tk.Label(self.help_frame, text="For Help on Using Easy-Note, Visit",
                  font="bold").grid(column=0, row=1)
         self.link1 = tk.Label(self.help_frame,
                               text="https://github.com/avd151/Easy-Note",
                               fg="blue", cursor="hand2")
-        self.link1.grid(column=1, row=2, sticky="w")
-        self.link1.bind("<Button-1>", self.open_website)
+        self.link1.grid(column=0, row=2, sticky="w")
+        
 
 
 class AboutWindow(tk.Toplevel):
