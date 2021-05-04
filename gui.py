@@ -4,12 +4,19 @@ from tkinter import ttk, messagebox, filedialog, font
 from os.path import basename, dirname, realpath, join
 from string import whitespace
 from webbrowser import open_new
-
+from tkinter import font
+from tkinter.font import Font, families
+from tkinter import colorchooser
+from tkinter.colorchooser import askcolor
+from tkfontchooser import askfont
 from os.path import basename, dirname, realpath
 from datetime import datetime
 import pyttsx3
 from PIL import Image, ImageTk
 
+#Flags
+IS_SAVED = 0
+NIGHT_MODE_IS_ON = 0
 
 class File:
 
@@ -118,8 +125,11 @@ class Main(tk.Tk):
         self.engine.runAndWait()
 
     def speak_selected(self):
-        self.audio = self.text.get(tk.SEL_FIRST, tk.SEL_LAST)
-        self.speak(self.audio)
+        try:
+            self.audio = self.text.get(tk.SEL_FIRST, tk.SEL_LAST)
+            self.speak(self.audio)
+        except:
+            self.speak("Please select some text.")
 
     def askToSave(self):
         if not self.IS_SAVED:
@@ -151,6 +161,8 @@ class MenuBar(tk.Menu):
         self.statusbar_var = tk.BooleanVar()
         self.statusbar_var.set(True)
 
+        
+        #File menu
         self.file_menu = tk.Menu(
             self, tearoff=False)
         self.file_menu.add_command(label="New",
@@ -172,6 +184,7 @@ class MenuBar(tk.Menu):
         self.add_cascade(label="File", menu=self.file_menu,
                          font="Times 23 bold")
 
+        # Edit menu
         self.edit_menu = tk.Menu(self, tearoff=False)
         self.edit_menu.add_command(label="Undo", command=self.undo,
                                    accelerator="Ctrl+Z", state="disabled")
@@ -197,18 +210,31 @@ class MenuBar(tk.Menu):
         self.add_cascade(label="Insert", menu=self.insert_menu,
                          font="Times 23 bold")
 
-        self.format_menu = tk.Menu(self, tearoff=False)
-        self.format_menu.add_checkbutton(label="Word Wrap",
-                                         command=self.toggle_wrap)
-        self.format_menu.add_command(label="Font",
-                                     command=self.open_font_window)
-        self.format_menu.add_command(label="Highlight",
+
+
+        #format menu
+        self.Format = tk.Menu(self, tearoff = 0)
+        self.Format.add_command(label="Bold", command=self.bold_)
+        self.Format.add_command(label="Italics", command=self.italics_)
+        self.Format.add_command(label="Highlight",
                                      command=self.master.text.highlight)
-        self.format_menu.add_command(label="Style",
-                                     command=self.master.text.set_style)
-        self.add_cascade(label="Format", menu=self.format_menu,
+        self.Format.add_separator()
+        self.Format.add_command(label="Fonts", command = self.fonts)
+        self.Format.add_separator()
+        self.Format.add_command(label="Selected Text Colour", command=self.colour_)
+        self.Format.add_command(label="All Text Colour", command=self.colour_all)
+        self.Format.add_command(label="Background Colour", command=self.bkg_colour)
+        self.Format.add_separator()
+        self.Format.add_checkbutton(label="Night Mode", command=self.night_mode, variable=NIGHT_MODE_IS_ON)
+        self.Format.add_checkbutton(label="Word Wrap",
+                                         command=self.toggle_wrap)
+        self.add_cascade(label="Format", menu=self.Format,
                          font="Times 23 bold")
 
+        #format menu end
+
+
+        #View Mwnu
         self.view_menu = tk.Menu(self, tearoff=False)
         self.view_menu.add_checkbutton(label="Status Bar",
                                        variable=self.statusbar_var,
@@ -218,12 +244,15 @@ class MenuBar(tk.Menu):
         self.add_cascade(label="View", menu=self.view_menu,
                          font="Times 23 bold")
 
+        
+        #List Menu
         self.list_menu = tk.Menu(self, tearoff=False)
         self.list_menu.add_command(
             label="Make a List", command=self.open_list_window)
         self.add_cascade(label="List", menu=self.list_menu,
                          font="Times 23 bold")
-
+        
+        #Help Menu
         self.help_menu = tk.Menu(self, tearoff=False)
         self.help_menu.add_command(label="Help")
         self.help_menu.add_command(label="About Application",
@@ -234,6 +263,7 @@ class MenuBar(tk.Menu):
         self.bind('<Control-x>', self.cut)
         self.bind('<Control-v>', self.paste)
 
+        #Functions
     def set_button_state(self, event=None):
         """
         Enables/disables the save, undo, redo, and select
@@ -251,6 +281,92 @@ class MenuBar(tk.Menu):
             self.edit_menu.entryconfig(7, state="normal")
         else:
             self.edit_menu.entryconfig(7, state="disabled")
+
+
+    #Format menu functions
+    def bold_(self):
+        bold_font = font.Font(self.master.text, self.master.text.cget("font"))
+        bold_font.configure(weight="bold")
+        self.master.text.tag_configure("bold", font=bold_font)
+        #def current_tags
+        current_tags = self.master.text.tag_names("sel.first")
+
+        #if tag is set then remove else add
+        if "bold" in current_tags:
+            self.master.text.tag_remove("bold", "sel.first", "sel.last")
+        else:
+            self.master.text.tag_add("bold", "sel.first", "sel.last")
+
+    def italics_(self):
+        italics_font = font.Font(self.master.text, self.master.text.cget("font"))
+        italics_font.configure(slant="italic")
+        self.master.text.tag_configure("italic", font=italics_font)
+        #def current_tags
+        current_tags = self.master.text.tag_names("sel.first")
+
+        #if tag is set then remove else add
+        if "italic" in current_tags:
+            self.master.text.tag_remove("italic", "sel.first", "sel.last")
+        else:
+            self.master.text.tag_add("italic", "sel.first", "sel.last")
+
+
+
+    def fonts(self):
+        font = askfont(self)
+        if font:
+            font['family'] = font['family'].replace(' ', '\ ')
+            font_str = "%(family)s %(size)i %(weight)s %(slant)s" % font
+        if font['underline']:
+            font_str += ' underline'
+        if font['overstrike']:
+            font_str += ' overstrike'
+        self.master.text.configure(font = font_str)
+
+
+    #selected text
+    def colour_(self):
+        my_colour = colorchooser.askcolor()[1]
+        colour_font = font.Font(self.master.text, self.master.text.cget("font"))
+        # colour_font.configure(slant="italic")
+        self.master.text.tag_configure("coloured", font=colour_font, foreground=my_colour)
+        #def current_tags
+        current_tags = self.master.text.tag_names("sel.first")
+
+        #if tag is set then remove else add
+        if "colored" in current_tags:
+            self.master.text.tag_remove("coloured", "sel.first", "sel.last")
+        else:
+            self.master.text.tag_add("coloured", "sel.first", "sel.last")
+
+    #all text
+    def colour_all(self):
+        my_colour = colorchooser.askcolor()[1]
+        if my_colour:     
+            self.master.text.configure(fg=my_colour)
+
+    #$background colour
+    def bkg_colour(self):
+        my_colour = colorchooser.askcolor()[1]
+        if my_colour:
+            self.master.text.configure(fg='#FFFFFF')      
+            self.master.text.configure(background=my_colour)
+
+    # night mode
+    def night_mode(self):
+        global NIGHT_MODE_IS_ON
+        if not NIGHT_MODE_IS_ON:
+            self.master.text.configure(fg='#FFFFFF')      
+            self.master.text.configure(background='#000000', insertbackground = '#FFFFFF')
+            self.master.speaker_btn["bg"] = '#000000'
+            NIGHT_MODE_IS_ON = 1
+        else:
+            self.master.text.configure(fg='#000000')      
+            self.master.text.configure(background='#FFFFFF', insertbackground = '#000000')
+            self.master.speaker_btn["bg"] = '#FFFFFF'
+            NIGHT_MODE_IS_ON = 0
+
+    #Format menu funstions end
 
     def new_file(self):
         """
@@ -385,13 +501,6 @@ class MenuBar(tk.Menu):
 
         self.master.text.config(wrap=self.wrap_var.get())
 
-    def open_font_window(self):
-        """
-        Opens a new window which allows the user to change the font
-        of the scrolledtext widget.
-        """
-        self.font_popup = FontWindow(self.master)
-        self.font_popup.destroy()
 
     def toggle_statusbar(self, master):
         """Toggles the status bar at the bottom of the window."""
@@ -409,131 +518,6 @@ class MenuBar(tk.Menu):
         self.about_popup = AboutWindow()
 
 
-class FontWindow(tk.Toplevel):
-
-    def __init__(self, master, selected=None):
-        tk.Toplevel.__init__(self, master)
-        self.master = master
-        self.title("Font")
-        self.resizable(0, 0)
-
-        self.font_container = tk.Frame(self)
-        self.font_container.grid(row=0, column=0)
-
-        self.font_var = tk.StringVar()
-        self.style_var = tk.StringVar()
-        self.size_var = tk.StringVar()
-        self.font_var.set("Arial")
-        self.style_var.set("normal")
-        self.size_var.set("10")
-
-        self.font_frame = tk.Frame(self.font_container)
-        tk.Label(self.font_container, text="Font:").grid(row=0, column=0)
-        self.selected_font = tk.Entry(self.font_container,
-                                      textvariable=self.font_var)
-        self.f_scrollbar = tk.Scrollbar(self.font_container,
-                                        orient=tk.VERTICAL)
-        self.fonts_box = tk.Listbox(self.font_container,
-                                    yscrollcommand=self.f_scrollbar.set)
-        self.f_scrollbar.config(command=self.fonts_box.yview)
-        self.f_scrollbar.grid(row=1, column=1, rowspan=2, sticky="NS")
-        for font in sorted(tk.font.families()):
-            if not font.startswith("@"):
-                self.fonts_box.insert(tk.END, font)
-        self.selected_font.grid(row=1, column=0)
-        self.fonts_box.grid(row=2, column=0)
-        self.font_frame.grid(row=0, column=0)
-
-        styles = ["normal", "bold", "italic", "underline", "overstrike"]
-
-        self.style_frame = tk.Frame(self.font_container)
-        tk.Label(self.font_container, text="Font style:").grid(row=0, column=2)
-        self.selected_style = tk.Entry(self.font_container,
-                                       textvariable=self.style_var)
-        self.st_scrollbar = tk.Scrollbar(self.font_container,
-                                         orient=tk.VERTICAL)
-        self.style_box = tk.Listbox(self.font_container,
-                                    yscrollcommand=self.st_scrollbar.set)
-        self.st_scrollbar.config(command=self.style_box.yview)
-        self.st_scrollbar.grid(row=1, column=3, rowspan=2, sticky="NS")
-        for style in styles:
-            self.style_box.insert(tk.END, style)
-        self.selected_style.grid(row=1, column=2, sticky="WE")
-        self.style_box.grid(row=2, column=2)
-        self.style_frame.grid(row=0, column=1)
-
-        sizes = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72]
-
-        self.size_frame = tk.Frame(self.font_container)
-        tk.Label(self.font_container, text="Size:").grid(row=0, column=4)
-        self.selected_size = tk.Entry(self.font_container,
-                                      textvariable=self.size_var)
-        self.s_scrollbar = tk.Scrollbar(self.font_container,
-                                        orient=tk.VERTICAL)
-        self.size_box = tk.Listbox(self.font_container,
-                                   yscrollcommand=self.s_scrollbar.set)
-        self.s_scrollbar.config(command=self.size_box.yview)
-        self.s_scrollbar.grid(row=1, column=5, rowspan=2, sticky="NS")
-        for size in sizes:
-            self.size_box.insert(tk.END, size)
-        self.selected_size.grid(row=1, column=4)
-        self.size_box.grid(row=2, column=4)
-        self.size_frame.grid(row=0, column=2)
-
-        self.sample_frame = tk.Frame(self.font_container, borderwidth=3,
-                                     width=285, height=80, relief="groove")
-        self.sample_lbl = tk.Label(self.sample_frame, text="Sample Text",
-                                   anchor="center")
-        self.sample_lbl.grid(row=0, column=0, sticky="NSEW")
-        self.sample_frame.grid(row=3, column=2, columnspan=5, pady=10)
-        self.sample_frame.grid_propagate(0)
-
-        self.button_frame = tk.Frame(self.font_container)
-        self.confirm_btn = tk.Button(self.button_frame, text="Confirm",
-                                     command=lambda master=master:
-                                     self.set_font(master))
-        self.confirm_btn.grid(row=0, column=0, sticky="WE")
-        self.cancel_btn = tk.Button(self.button_frame, text="Cancel",
-                                    command=lambda: self.destroy())
-        self.cancel_btn.grid(row=0, column=1, sticky="WE")
-        self.button_frame.grid(row=4, column=4, padx=5, pady=5)
-
-        self.fonts_box.bind("<<ListboxSelect>>",
-                            lambda evt, var=self.font_var:
-                            self.onselect(evt, var))
-        self.style_box.bind("<<ListboxSelect>>",
-                            lambda evt, var=self.style_var:
-                            self.onselect(evt, var))
-        self.size_box.bind("<<ListboxSelect>>",
-                           lambda evt, var=self.size_var:
-                           self.onselect(evt, var))
-
-    def onselect(self, evt, var):
-        """
-        When a listbox item is selected by the user var will be
-        set to the selected item.  The sample_lbl will also be
-        changed to reflect the new selection.
-
-        :params evt: Event that triggered the call
-        :params var: The variable to set
-        """
-        w = evt.widget
-        ndex = int(w.curselection()[0])
-        name = w.get(ndex)
-        var.set(name)
-        self.sample_lbl.config(font=(self.font_var.get(), self.size_var.get(),
-                               self.style_var.get()))
-
-    def set_font(self, master, txt=None):
-        """
-        Sets the font, style, and size of 'txt'.
-        """
-        if not txt:
-            txt = master.text
-
-        txt.config(font=(self.font_var.get(),
-                   self.size_var.get(), self.style_var.get()))
-        return (self.font_var.get(), self.size_var.get(), self.style_var.get())
 
 
 class ListWindow(tk.Toplevel):
@@ -755,7 +739,6 @@ class StatusBar(tk.Frame):
     def update_status(self, evt, master):
         """
         Updates the info displayed in the status bar.
-
         :params evt: Event object.
         :params master: Master window.
         """
@@ -763,3 +746,4 @@ class StatusBar(tk.Frame):
         self.char_count.set(len(master.text.get("1.0", tk.END)) - 1)
         self.curr_line.set(self.position[0])
         self.curr_col.set(self.position[1])
+
