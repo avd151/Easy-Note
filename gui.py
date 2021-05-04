@@ -9,14 +9,9 @@ from tkinter.font import Font, families
 from tkinter import colorchooser
 from tkinter.colorchooser import askcolor
 from tkfontchooser import askfont
-from os.path import basename, dirname, realpath
 from datetime import datetime
 import pyttsx3
 from PIL import Image, ImageTk
-
-# Flags
-IS_SAVED = 0
-NIGHT_MODE_IS_ON = 0
 
 
 class File:
@@ -56,6 +51,7 @@ class Main(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
 
         self.IS_SAVED = 0
+        self.NIGHT_MODE_IS_ON = 0
 
         self.wm_geometry("800x600")
         self.curr_file = None
@@ -231,7 +227,7 @@ class MenuBar(tk.Menu):
             label="Background Colour", command=self.bkg_colour)
         self.Format.add_separator()
         self.Format.add_checkbutton(
-            label="Night Mode", command=self.night_mode, variable=NIGHT_MODE_IS_ON)
+            label="Night Mode", command=self.night_mode, variable=self.master.NIGHT_MODE_IS_ON)
         self.Format.add_checkbutton(label="Word Wrap",
                                     command=self.toggle_wrap)
         self.add_cascade(label="Format", menu=self.Format,
@@ -356,22 +352,22 @@ class MenuBar(tk.Menu):
         if my_colour:
             self.master.text.configure(fg='#FFFFFF')
             self.master.text.configure(background=my_colour)
+            self.master.speaker_btn["bg"] = my_colour
 
     # night mode
     def night_mode(self):
-        global NIGHT_MODE_IS_ON
-        if not NIGHT_MODE_IS_ON:
+        if not self.master.NIGHT_MODE_IS_ON:
             self.master.text.configure(fg='#FFFFFF')
             self.master.text.configure(
                 background='#000000', insertbackground='#FFFFFF')
             self.master.speaker_btn["bg"] = '#000000'
-            NIGHT_MODE_IS_ON = 1
+            self.master.NIGHT_MODE_IS_ON = 1
         else:
             self.master.text.configure(fg='#000000')
             self.master.text.configure(
                 background='#FFFFFF', insertbackground='#000000')
             self.master.speaker_btn["bg"] = '#FFFFFF'
-            NIGHT_MODE_IS_ON = 0
+            self.master.NIGHT_MODE_IS_ON = 0
 
     # Format menu funstions end
 
@@ -637,8 +633,8 @@ class HelpWindow(tk.Toplevel):
         self.link1 = tk.Label(self.help_frame,
                               text="https://github.com/avd151/Easy-Note",
                               fg="blue", cursor="hand2")
-        self.link1.grid(column=1, row=2, sticky="w")
-        self.link1.bind("<Button-1>", self.open_website)
+        self.link1.grid(column=0, row=2, sticky="w")
+        
 
 
 class AboutWindow(tk.Toplevel):
