@@ -14,9 +14,10 @@ from datetime import datetime
 import pyttsx3
 from PIL import Image, ImageTk
 
-#Flags
+# Flags
 IS_SAVED = 0
 NIGHT_MODE_IS_ON = 0
+
 
 class File:
 
@@ -34,7 +35,8 @@ class CustomDateTime:
 
     def __init__(self, dt_obj=datetime.now()):
         self.dt_obj = dt_obj
-        self.date = str(self.dt_obj.day) + "/" + str(self.dt_obj.month) + "/" + str(self.dt_obj.year)
+        self.date = str(self.dt_obj.day) + "/" + \
+            str(self.dt_obj.month) + "/" + str(self.dt_obj.year)
         self.time = datetime.strftime(datetime.strptime(
             str(self.dt_obj.hour)+":"+str(self.dt_obj.minute), "%H:%M"), "%I:%M %p")
 
@@ -68,7 +70,7 @@ class Main(tk.Tk):
         self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
 
         self.curr_file = File(join(dirname(realpath(__file__)) +
-                                    "\\New File.txt"))
+                                   "\\New File.txt"))
         self.add_scrolledtext()
         self.setup()
 
@@ -91,10 +93,11 @@ class Main(tk.Tk):
         self.bind('<Control-S>', self.menu.ctrlShiftS)
         self.bind('<Control-q>', self.menu.ctrlQ)
 
-        self.speaker = tk.PhotoImage(file = "speaker.png")
-        self.speaker_btn = tk.Button(self.text, image = self.speaker, height = 40, width = 40, command = self.speak_selected)
+        self.speaker = tk.PhotoImage(file="speaker.png")
+        self.speaker_btn = tk.Button(
+            self.text, image=self.speaker, height=40, width=40, command=self.speak_selected)
         self.speaker_btn.update()
-        self.speaker_btn.place(x = self.winfo_width() - 60, y = 10)
+        self.speaker_btn.place(x=self.winfo_width() - 60, y=10)
         self.speaker_btn["bg"] = "white"
         self.speaker_btn["border"] = "0"
         self.speaker_btn.lift()
@@ -133,7 +136,8 @@ class Main(tk.Tk):
 
     def askToSave(self):
         if not self.IS_SAVED:
-            msgbox = messagebox.askyesnocancel(title = "Save Changes", message = "Do you want to save the changes ?") 
+            msgbox = messagebox.askyesnocancel(
+                title="Save Changes", message="Do you want to save the changes ?")
             if msgbox:
                 self.menu.save_file()
                 self.destroy()
@@ -149,7 +153,8 @@ class Main(tk.Tk):
 
     def resizeEvent(self, e):
         self.update()
-        self.speaker_btn.place(x = self.winfo_width() - 60, y = 10)
+        self.speaker_btn.place(x=self.winfo_width() - 60, y=10)
+
 
 class MenuBar(tk.Menu):
 
@@ -161,8 +166,7 @@ class MenuBar(tk.Menu):
         self.statusbar_var = tk.BooleanVar()
         self.statusbar_var.set(True)
 
-        
-        #File menu
+        # File menu
         self.file_menu = tk.Menu(
             self, tearoff=False)
         self.file_menu.add_command(label="New",
@@ -210,31 +214,32 @@ class MenuBar(tk.Menu):
         self.add_cascade(label="Insert", menu=self.insert_menu,
                          font="Times 23 bold")
 
-
-
-        #format menu
-        self.Format = tk.Menu(self, tearoff = 0)
+        # format menu
+        self.Format = tk.Menu(self, tearoff=0)
         self.Format.add_command(label="Bold", command=self.bold_)
         self.Format.add_command(label="Italics", command=self.italics_)
         self.Format.add_command(label="Highlight",
-                                     command=self.master.text.highlight)
+                                command=self.master.text.highlight)
         self.Format.add_separator()
-        self.Format.add_command(label="Fonts", command = self.fonts)
+        self.Format.add_command(label="Fonts", command=self.fonts)
         self.Format.add_separator()
-        self.Format.add_command(label="Selected Text Colour", command=self.colour_)
-        self.Format.add_command(label="All Text Colour", command=self.colour_all)
-        self.Format.add_command(label="Background Colour", command=self.bkg_colour)
+        self.Format.add_command(
+            label="Selected Text Colour", command=self.colour_)
+        self.Format.add_command(label="All Text Colour",
+                                command=self.colour_all)
+        self.Format.add_command(
+            label="Background Colour", command=self.bkg_colour)
         self.Format.add_separator()
-        self.Format.add_checkbutton(label="Night Mode", command=self.night_mode, variable=NIGHT_MODE_IS_ON)
+        self.Format.add_checkbutton(
+            label="Night Mode", command=self.night_mode, variable=NIGHT_MODE_IS_ON)
         self.Format.add_checkbutton(label="Word Wrap",
-                                         command=self.toggle_wrap)
+                                    command=self.toggle_wrap)
         self.add_cascade(label="Format", menu=self.Format,
                          font="Times 23 bold")
 
-        #format menu end
+        # format menu end
 
-
-        #View Mwnu
+        # View Mwnu
         self.view_menu = tk.Menu(self, tearoff=False)
         self.view_menu.add_checkbutton(label="Status Bar",
                                        variable=self.statusbar_var,
@@ -244,17 +249,16 @@ class MenuBar(tk.Menu):
         self.add_cascade(label="View", menu=self.view_menu,
                          font="Times 23 bold")
 
-        
-        #List Menu
+        # List Menu
         self.list_menu = tk.Menu(self, tearoff=False)
         self.list_menu.add_command(
             label="Make a List", command=self.open_list_window)
         self.add_cascade(label="List", menu=self.list_menu,
                          font="Times 23 bold")
-        
-        #Help Menu
+
+        # Help Menu
         self.help_menu = tk.Menu(self, tearoff=False)
-        self.help_menu.add_command(label="Help")
+        self.help_menu.add_command(label="Help", command=self.open_help)
         self.help_menu.add_command(label="About Application",
                                    command=self.open_about_window)
         self.add_cascade(label="Help", menu=self.help_menu,
@@ -263,7 +267,7 @@ class MenuBar(tk.Menu):
         self.bind('<Control-x>', self.cut)
         self.bind('<Control-v>', self.paste)
 
-        #Functions
+        # Functions
     def set_button_state(self, event=None):
         """
         Enables/disables the save, undo, redo, and select
@@ -282,35 +286,34 @@ class MenuBar(tk.Menu):
         else:
             self.edit_menu.entryconfig(7, state="disabled")
 
+    # Format menu functions
 
-    #Format menu functions
     def bold_(self):
         bold_font = font.Font(self.master.text, self.master.text.cget("font"))
         bold_font.configure(weight="bold")
         self.master.text.tag_configure("bold", font=bold_font)
-        #def current_tags
+        # def current_tags
         current_tags = self.master.text.tag_names("sel.first")
 
-        #if tag is set then remove else add
+        # if tag is set then remove else add
         if "bold" in current_tags:
             self.master.text.tag_remove("bold", "sel.first", "sel.last")
         else:
             self.master.text.tag_add("bold", "sel.first", "sel.last")
 
     def italics_(self):
-        italics_font = font.Font(self.master.text, self.master.text.cget("font"))
+        italics_font = font.Font(
+            self.master.text, self.master.text.cget("font"))
         italics_font.configure(slant="italic")
         self.master.text.tag_configure("italic", font=italics_font)
-        #def current_tags
+        # def current_tags
         current_tags = self.master.text.tag_names("sel.first")
 
-        #if tag is set then remove else add
+        # if tag is set then remove else add
         if "italic" in current_tags:
             self.master.text.tag_remove("italic", "sel.first", "sel.last")
         else:
             self.master.text.tag_add("italic", "sel.first", "sel.last")
-
-
 
     def fonts(self):
         font = askfont(self)
@@ -321,52 +324,56 @@ class MenuBar(tk.Menu):
             font_str += ' underline'
         if font['overstrike']:
             font_str += ' overstrike'
-        self.master.text.configure(font = font_str)
+        self.master.text.configure(font=font_str)
 
+    # selected text
 
-    #selected text
     def colour_(self):
         my_colour = colorchooser.askcolor()[1]
-        colour_font = font.Font(self.master.text, self.master.text.cget("font"))
+        colour_font = font.Font(
+            self.master.text, self.master.text.cget("font"))
         # colour_font.configure(slant="italic")
-        self.master.text.tag_configure("coloured", font=colour_font, foreground=my_colour)
-        #def current_tags
+        self.master.text.tag_configure(
+            "coloured", font=colour_font, foreground=my_colour)
+        # def current_tags
         current_tags = self.master.text.tag_names("sel.first")
 
-        #if tag is set then remove else add
+        # if tag is set then remove else add
         if "colored" in current_tags:
             self.master.text.tag_remove("coloured", "sel.first", "sel.last")
         else:
             self.master.text.tag_add("coloured", "sel.first", "sel.last")
 
-    #all text
+    # all text
     def colour_all(self):
         my_colour = colorchooser.askcolor()[1]
-        if my_colour:     
+        if my_colour:
             self.master.text.configure(fg=my_colour)
 
-    #$background colour
+    # $background colour
     def bkg_colour(self):
         my_colour = colorchooser.askcolor()[1]
         if my_colour:
-            self.master.text.configure(fg='#FFFFFF')      
+            self.master.text.configure(fg='#FFFFFF')
             self.master.text.configure(background=my_colour)
 
     # night mode
     def night_mode(self):
         global NIGHT_MODE_IS_ON
         if not NIGHT_MODE_IS_ON:
-            self.master.text.configure(fg='#FFFFFF')      
-            self.master.text.configure(background='#000000', insertbackground = '#FFFFFF')
+            self.master.text.configure(fg='#FFFFFF')
+            self.master.text.configure(
+                background='#000000', insertbackground='#FFFFFF')
             self.master.speaker_btn["bg"] = '#000000'
             NIGHT_MODE_IS_ON = 1
         else:
-            self.master.text.configure(fg='#000000')      
-            self.master.text.configure(background='#FFFFFF', insertbackground = '#000000')
+            self.master.text.configure(fg='#000000')
+            self.master.text.configure(
+                background='#FFFFFF', insertbackground='#000000')
             self.master.speaker_btn["bg"] = '#FFFFFF'
             NIGHT_MODE_IS_ON = 0
 
-    #Format menu funstions end
+    # Format menu funstions end
 
     def new_file(self):
         """
@@ -375,13 +382,14 @@ class MenuBar(tk.Menu):
         """
 
         if not self.master.IS_SAVED:
-            msgbox = messagebox.askyesnocancel(title = "Save Changes", message = "Do you want to save the changes ?") 
+            msgbox = messagebox.askyesnocancel(
+                title="Save Changes", message="Do you want to save the changes ?")
             if msgbox:
                 self.save_file()
             elif msgbox is None:
                 pass
         self.master.curr_file = File(join(dirname(realpath(__file__)) +
-                                    "\\New File.txt"))
+                                          "\\New File.txt"))
         self.master.add_scrolledtext()
         self.master.setup()
         self.master.IS_SAVED = 0
@@ -397,7 +405,8 @@ class MenuBar(tk.Menu):
         object and sets the curr_file to that object.
         """
         if not self.master.IS_SAVED:
-            msgbox = messagebox.askyesnocancel(title = "Save Changes", message = "Do you want to save the changes ?") 
+            msgbox = messagebox.askyesnocancel(
+                title="Save Changes", message="Do you want to save the changes ?")
             if msgbox:
                 self.save_file()
             elif msgbox is None:
@@ -501,7 +510,6 @@ class MenuBar(tk.Menu):
 
         self.master.text.config(wrap=self.wrap_var.get())
 
-
     def toggle_statusbar(self, master):
         """Toggles the status bar at the bottom of the window."""
         if not self.statusbar_var.get():
@@ -513,11 +521,12 @@ class MenuBar(tk.Menu):
     def open_list_window(self):
         self.list_window = ListWindow()
 
+    def open_help(self):
+        self.help_popup = HelpWindow()
+
     def open_about_window(self):
         """Displays the 'About' window."""
         self.about_popup = AboutWindow()
-
-
 
 
 class ListWindow(tk.Toplevel):
@@ -610,6 +619,25 @@ class ListWindow(tk.Toplevel):
             print(item.cget("text"), file=writefile)
         writefile.close()
         self.destroy()
+
+
+class HelpWindow(tk.Toplevel):
+    """
+    Displays help information.
+    """
+
+    def __init__(self):
+        tk.Toplevel.__init__(self)
+        self.title("Help : Easy-Note")
+        self.geometry("800x200")
+        self.help_frame = tk.Frame(self)
+        self.help_frame.grid(column=0, row=0)
+        tk.Label(self.about_frame, text="For Help on Using Easy-Note, Visit",
+                 font="bold").grid(column=0, row=1)
+        self.link1 = tk.Label(self.help_frame,
+                              text="https://github.com/avd151/Easy-Note",
+                              fg="blue", cursor="hand2")
+        self.link1.grid(column=1, row=2, sticky="w")
 
 
 class AboutWindow(tk.Toplevel):
@@ -746,4 +774,3 @@ class StatusBar(tk.Frame):
         self.char_count.set(len(master.text.get("1.0", tk.END)) - 1)
         self.curr_line.set(self.position[0])
         self.curr_col.set(self.position[1])
-
