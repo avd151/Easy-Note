@@ -629,7 +629,7 @@ class HelpWindow(tk.Toplevel):
     def __init__(self):
         tk.Toplevel.__init__(self)
         self.title("Help : Easy-Note")
-        self.geometry("800x200")
+        self.geometry("250x200")
         self.help_frame = tk.Frame(self)
         self.help_frame.grid(column=0, row=0)
         tk.Label(self.about_frame, text="For Help on Using Easy-Note, Visit",
