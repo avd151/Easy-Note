@@ -638,6 +638,7 @@ class HelpWindow(tk.Toplevel):
                               text="https://github.com/avd151/Easy-Note",
                               fg="blue", cursor="hand2")
         self.link1.grid(column=1, row=2, sticky="w")
+        self.link1.bind("<Button-1>", self.open_website)
 
 
 class AboutWindow(tk.Toplevel):
