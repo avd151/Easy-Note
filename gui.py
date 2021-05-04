@@ -100,6 +100,8 @@ class Main(tk.Tk):
         self.speaker_btn.update()
         self.bind("<Configure>", self.resizeEvent)
 
+        self.protocol("WM_DELETE_WINDOW", self.askToSave)
+
     def setup(self):
         """
         Currently this only sets the title for the window
@@ -535,6 +537,7 @@ class ListWindow(tk.Toplevel):
         self.backGroundColor_lib = ["palegreen", "mistyrose", "lightcyan",
                                     "wheat", "azure", "paleturquoise", "beige", "lavender"]
         self.fontcolor_lib = ["black"]
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         if not tasks:
             self.tasks = []
@@ -633,6 +636,7 @@ class HelpWindow(tk.Toplevel):
         self.link1 = tk.Label(self.help_frame,
                               text="https://github.com/avd151/Easy-Note",
                               fg="blue", cursor="hand2")
+        self.link1.bind("<Button-1>", lambda e: open_new("https://github.com/avd151/Easy-Note"))
         self.link1.grid(column=0, row=2, sticky="w")
         
 
